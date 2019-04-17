@@ -1,1 +1,1 @@
-wp-display-github-repo
+# wp-display-github-repo
