@@ -47,20 +47,37 @@ class WP_Display_Github_Repo {
     }
 
     function add_shortcode( $atts ) {
+        $return_value = '';
         $a = shortcode_atts( array(
-            'foo' => 'something',
-            'bar' => 'something else',
+            'url' => 'https://github.com/hegemanjr/wp-welcome-user',
+            'get' => 'full',
         ), $atts );
 
-        $repo_readme = file_get_contents('https://raw.githubusercontent.com/hegemanjr/wp-welcome-user/master/README.md');
+        $url_array = parse_url($a['url']);
 
-        $Parsedown = new Parsedown();
+        if($url_array['host'] == 'github.com'){
+            $readme_url = 'https://raw.githubusercontent.com' . $url_array['path'] . '/master/README.md';
+            $latest_release_url = $a['url'] . '/releases/latest';
+            $repo_readme_md = file_get_contents($readme_url);
+            $Parsedown = new Parsedown();
+            $repo_readme_html = $Parsedown->text($repo_readme_md);
 
-//        return $Parsedown->text('Hello _Parsedown_!'); # prints: <p>Hello <em>Parsedown</em>!</p>
-
-        return $Parsedown->text($repo_readme);
-
-//        return "foo = {$a['foo']}";
+            if($a['get'] == 'full'){
+                $return_value .= '<a href="' . $a['url'] . '"><i class="fab fa-github"></i> Github Repo</a> | ';
+                $return_value .= '<a href="' . $latest_release_url . '"><i class="fas fa-download"></i> Download Latest Release</a><br />';
+                $return_value .= $repo_readme_html;
+            }elseif ($a['get'] == 'readme'){
+                $return_value .= $repo_readme_html;
+            }elseif ($a['get'] == 'name'){
+                $return_value .= basename($url_array["path"]);
+            }elseif ($a['get'] == 'links'){
+                $return_value .= '<a href="' . $a['url'] . '"><i class="fab fa-github"></i> Github Repo</a> | ';
+                $return_value .= '<a href="' . $latest_release_url . '"><i class="fas fa-download"></i> Download Latest Release</a><br />';
+            }
+        }else{
+            $return_value .= $url_array['host'];
+        }
+        return $return_value;
     }
 
     function activate_plugin() {
